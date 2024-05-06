@@ -45,9 +45,23 @@ async function run() {
     app.post("/myCourse", async (req, res) => {
       const course = req.body;
       console.log(course);
-      const result = await myCourseCollection.insertOne(course);
-      res.send(result);
-    });
+      const query = { id: course._id }; // Access _id property properly
+      console.log("new id", query);
+      
+      try {
+          const existingUser = await myCourseCollection.findOne(query);
+          if (existingUser) {
+              return res.send({ message: 'User already added this course.', insertedId: null });
+          }
+          
+          const result = await myCourseCollection.insertOne(course);
+          console.log("Course added successfully:", result);
+          res.send(result);
+      } catch (error) {
+          console.error("Error adding course:", error);
+          res.status(500).send({ message: 'User already enroll this course..', error: error });
+      }
+  });
     app.get('/myCourse',async(req,res) =>{
       const course = myCourseCollection.find();
       const result =await course.toArray()
